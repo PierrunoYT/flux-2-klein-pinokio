@@ -1,0 +1,350 @@
+import torch
+import gradio as gr
+from diffusers import Flux2KleinPipeline
+from PIL import Image
+import numpy as np
+
+# Global variables for the pipelines
+pipe_4b = None
+pipe_9b = None
+current_model = None
+hf_token = None
+
+def set_hf_token(token):
+    """Set the Hugging Face token for model loading"""
+    global hf_token
+    if token and token.strip():
+        hf_token = token.strip()
+        return "✓ Token set successfully! You can now select a model and generate images."
+    else:
+        hf_token = None
+        return "⚠ Token cleared or invalid."
+
+def load_model(model_choice):
+    """Load the FLUX.2 klein model (4B or 9B)"""
+    global pipe_4b, pipe_9b, current_model, hf_token
+    
+    if hf_token is None:
+        raise ValueError("Please set your Hugging Face token first!")
+    
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+    
+    if model_choice == "FLUX.2 klein 4B (~13GB VRAM)":
+        if pipe_4b is None:
+            print("Loading FLUX.2 klein 4B model...")
+            pipe_4b = Flux2KleinPipeline.from_pretrained(
+                "black-forest-labs/FLUX.2-klein-4B", 
+                torch_dtype=dtype,
+                token=hf_token
+            )
+            
+            # Enable CPU offload to save VRAM
+            if torch.cuda.is_available():
+                pipe_4b.enable_model_cpu_offload()
+            else:
+                pipe_4b = pipe_4b.to(device)
+            
+            print("FLUX.2 klein 4B model loaded successfully!")
+        current_model = pipe_4b
+        return pipe_4b
+    else:  # 9B model
+        if pipe_9b is None:
+            print("Loading FLUX.2 klein 9B model...")
+            pipe_9b = Flux2KleinPipeline.from_pretrained(
+                "black-forest-labs/FLUX.2-klein-9B", 
+                torch_dtype=dtype,
+                token=hf_token
+            )
+            
+            # Enable CPU offload to save VRAM
+            if torch.cuda.is_available():
+                pipe_9b.enable_model_cpu_offload()
+            else:
+                pipe_9b = pipe_9b.to(device)
+            
+            print("FLUX.2 klein 9B model loaded successfully!")
+        current_model = pipe_9b
+        return pipe_9b
+
+def generate_image(
+    prompt,
+    model_choice,
+    height,
+    width,
+    guidance_scale,
+    num_inference_steps,
+    seed,
+    use_random_seed
+):
+    """Generate image from text prompt"""
+    try:
+        # Check if token is set
+        if hf_token is None:
+            blank_image = Image.new('RGB', (512, 512), color='gray')
+            return blank_image, "⚠ Error: Please set your Hugging Face token first!"
+        
+        # Load model if not already loaded
+        pipeline = load_model(model_choice)
+        
+        # Set device
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        
+        # Handle seed
+        if use_random_seed:
+            seed = np.random.randint(0, 2**32 - 1)
+        
+        generator = torch.Generator(device=device).manual_seed(int(seed))
+        
+        # Generate image
+        model_name = "4B" if "4B" in model_choice else "9B"
+        print(f"Generating image with FLUX.2 klein {model_name} - prompt: '{prompt}'")
+        print(f"Parameters: {width}x{height}, steps: {num_inference_steps}, guidance: {guidance_scale}, seed: {seed}")
+        
+        result = pipeline(
+            prompt=prompt,
+            height=int(height),
+            width=int(width),
+            guidance_scale=float(guidance_scale),
+            num_inference_steps=int(num_inference_steps),
+            generator=generator
+        )
+        
+        image = result.images[0]
+        
+        return image, f"✓ Generated successfully with {model_name} model! Seed used: {seed}"
+    
+    except ValueError as e:
+        error_msg = f"⚠ {str(e)}"
+        print(error_msg)
+        blank_image = Image.new('RGB', (512, 512), color='gray')
+        return blank_image, error_msg
+    except Exception as e:
+        error_msg = str(e)
+        # Check for common authentication errors
+        if "401" in error_msg or "authentication" in error_msg.lower() or "access" in error_msg.lower():
+            error_msg = "⚠ Authentication Error: Invalid token or you haven't accepted the model license. Please check your token and make sure you've accepted the license on Hugging Face."
+        else:
+            error_msg = f"⚠ Error generating image: {error_msg}"
+        print(error_msg)
+        # Return a blank image and error message
+        blank_image = Image.new('RGB', (512, 512), color='gray')
+        return blank_image, error_msg
+
+# Create Gradio interface
+with gr.Blocks(title="FLUX.2 [klein] Image Generator") as demo:
+    gr.Markdown("""
+    # 🎨 FLUX.2 [klein] Image Generator
+    
+    Generate high-quality images from text descriptions using Black Forest Labs' FLUX.2 [klein] models.
+    
+    **Features:**
+    - Sub-second image generation with outstanding quality
+    - Excellent prompt adherence and output diversity
+    - Real-time generation capabilities
+    - Choose between 4B (consumer GPUs) or 9B (high-end GPUs) models
+    
+    *Note: First generation will take longer as the model loads into memory.*
+    """)
+    
+    # Hugging Face Token Section
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown("""
+            ### 🔑 Authentication Required
+            These models are gated. You need a Hugging Face token with access to the FLUX.2 [klein] models.
+            
+            **Steps:**
+            1. Get your token from [Hugging Face Settings](https://huggingface.co/settings/tokens)
+            2. Accept the license at [FLUX.2-klein-4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) and/or [FLUX.2-klein-9B](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B)
+            3. Enter your token below
+            """)
+            
+            with gr.Row():
+                token_input = gr.Textbox(
+                    label="Hugging Face Token",
+                    placeholder="hf_...",
+                    type="password",
+                    scale=4
+                )
+                token_btn = gr.Button("Set Token", variant="primary", scale=1)
+            
+            token_status = gr.Textbox(
+                label="Status",
+                interactive=False,
+                value="⚠ Please set your Hugging Face token to continue"
+            )
+    
+    gr.Markdown("---")
+    
+    with gr.Row():
+        with gr.Column(scale=1):
+            # Input controls
+            prompt_input = gr.Textbox(
+                label="Prompt",
+                placeholder="A cat holding a sign that says hello world",
+                lines=3,
+                value="A cat holding a sign that says hello world"
+            )
+            
+            model_selector = gr.Radio(
+                choices=[
+                    "FLUX.2 klein 4B (~13GB VRAM)",
+                    "FLUX.2 klein 9B (~29GB VRAM)"
+                ],
+                value="FLUX.2 klein 4B (~13GB VRAM)",
+                label="Model Selection",
+                info="4B: RTX 3090/4070+ | 9B: RTX 4090+"
+            )
+            
+            with gr.Accordion("Advanced Settings", open=False):
+                with gr.Row():
+                    width_slider = gr.Slider(
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
+                        value=1024,
+                        label="Width"
+                    )
+                    height_slider = gr.Slider(
+                        minimum=256,
+                        maximum=2048,
+                        step=64,
+                        value=1024,
+                        label="Height"
+                    )
+                
+                guidance_scale_slider = gr.Slider(
+                    minimum=1.0,
+                    maximum=10.0,
+                    step=0.5,
+                    value=4.0,
+                    label="Guidance Scale",
+                    info="Higher values follow the prompt more closely"
+                )
+                
+                steps_slider = gr.Slider(
+                    minimum=1,
+                    maximum=50,
+                    step=1,
+                    value=4,
+                    label="Inference Steps",
+                    info="More steps = better quality but slower. Model is optimized for 4 steps."
+                )
+                
+                use_random_seed = gr.Checkbox(
+                    label="Use Random Seed",
+                    value=True
+                )
+                
+                seed_input = gr.Number(
+                    label="Seed (ignored if random seed is enabled)",
+                    value=0,
+                    precision=0
+                )
+            
+            generate_btn = gr.Button("🚀 Generate Image", variant="primary", size="lg")
+            
+        with gr.Column(scale=1):
+            # Output
+            output_image = gr.Image(
+                label="Generated Image",
+                type="pil",
+                height=600
+            )
+            status_text = gr.Textbox(
+                label="Status",
+                interactive=False
+            )
+    
+    # Example prompts
+    gr.Examples(
+        examples=[
+            ["A cat holding a sign that says hello world", 1024, 1024, 4.0, 4],
+            ["A futuristic cityscape at sunset with flying cars", 1024, 1024, 4.0, 4],
+            ["A photorealistic portrait of a robot with human emotions", 1024, 1024, 4.0, 4],
+            ["An enchanted forest with glowing mushrooms and fairy lights", 1024, 1024, 4.0, 4],
+            ["A steaming cup of coffee on a wooden table, morning light, cozy atmosphere", 1024, 1024, 4.0, 4],
+            ["A majestic dragon perched on a mountain peak, detailed scales, dramatic sky", 1024, 1024, 4.0, 4],
+        ],
+        inputs=[prompt_input, width_slider, height_slider, guidance_scale_slider, steps_slider],
+        label="Example Prompts"
+    )
+    
+    gr.Markdown("""
+    ---
+    ### Tips for better results:
+    - Be specific and descriptive in your prompts
+    - The models are optimized for 4 inference steps
+    - Use guidance scale around 3.5-4.5 for best results
+    - Standard resolutions: 1024x1024, 1024x768, 768x1024
+    
+    ### Model Information:
+    **FLUX.2 klein 4B**: Runs on consumer GPUs (RTX 3090/4070+, ~13GB VRAM) | Apache 2.0 License (commercial use allowed)  
+    **FLUX.2 klein 9B**: Requires high-end GPUs (RTX 4090+, ~29GB VRAM) | Non-Commercial License only
+    
+    ### Hardware Requirements:
+    - **4B Model**: NVIDIA RTX 3090, 4070, or better (~13GB VRAM)
+    - **9B Model**: NVIDIA RTX 4090 or better (~29GB VRAM)
+    """)
+    
+    # Connect the token button
+    token_btn.click(
+        fn=set_hf_token,
+        inputs=[token_input],
+        outputs=[token_status]
+    )
+    
+    # Connect the generate button
+    generate_btn.click(
+        fn=generate_image,
+        inputs=[
+            prompt_input,
+            model_selector,
+            height_slider,
+            width_slider,
+            guidance_scale_slider,
+            steps_slider,
+            seed_input,
+            use_random_seed
+        ],
+        outputs=[output_image, status_text]
+    )
+
+# Launch the app
+if __name__ == "__main__":
+    print("=" * 60)
+    print("FLUX.2 [klein] Gradio UI")
+    print("=" * 60)
+    print("\nAvailable models:")
+    print("  - 4B (consumer GPUs: RTX 3090/4070+, ~13GB VRAM)")
+    print("  - 9B (high-end GPUs: RTX 4090+, ~29GB VRAM)")
+    print()
+    print("⚠ You will need to set your Hugging Face token in the web interface")
+    print()
+    
+    # Check CUDA
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"GPU: {torch.cuda.get_device_name(0)}")
+        vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+        print(f"VRAM: {vram:.1f}GB")
+        if vram >= 28:
+            print("✓ Sufficient VRAM for both 4B and 9B models")
+        elif vram >= 12:
+            print("✓ Sufficient VRAM for 4B model (~13GB required)")
+        else:
+            print("⚠ Warning: May not have sufficient VRAM. 4B model requires ~13GB")
+    else:
+        print("⚠ No CUDA GPU detected. Generation will be very slow on CPU.")
+    
+    print()
+    print("Starting web interface...")
+    print("=" * 60)
+    
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False,
+        show_error=True
+    )
