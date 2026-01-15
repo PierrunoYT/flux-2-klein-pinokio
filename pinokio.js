@@ -2,7 +2,7 @@ const path = require('path')
 module.exports = {
   version: "5.0",
   title: "FLUX.2 [klein]",
-  description: "🎨 FLUX.2 [klein] - Fast text-to-image generation with Black Forest Labs' FLUX.2 models. Choose between 4B (consumer GPUs, ~13GB VRAM) or 9B (high-end GPUs, ~29GB VRAM) for sub-second image generation with outstanding quality.",
+  description: "🎨 FLUX.2 [klein] - Fast text-to-image generation with Black Forest Labs' FLUX.2 models. 6 variants available: 4B/9B (full precision) plus NVFP4/FP8 quantized versions. Consumer GPUs (~13GB) to high-end (~29GB) for sub-second image generation with outstanding quality.",
   icon: "icon.png",
   menu: async (kernel, info) => {
     let installed = info.exists("env")
