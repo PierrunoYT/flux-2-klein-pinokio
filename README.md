@@ -86,42 +86,76 @@ All models support:
 - Real-time generation and application integration
 - Step-distilled to 4 inference steps for optimal speed/quality balance
 
-### Understanding Quantization
+### Understanding Model Concepts
+
+#### 🎯 Model Distillation (Inference Speed)
+FLUX.2 [klein] is **step-distilled** to optimize generation speed:
+- **Distilled Mode (4 steps)**: Sub-second generation, optimized performance
+- **Base Mode (50 steps)**: Traditional diffusion with more refinement steps
+- **Recommendation**: Use 4 steps - the models are specifically trained for this
+
+#### 🗜️ Model Quantization (Memory Precision)
+Reduces VRAM usage and increases speed by using lower-precision numbers:
 
 **Full Precision (Base Models)**
-- Maximum quality with full BF16 weights
-- Slower inference, higher memory usage
-- Best when quality is the top priority
-
-**NVFP4 Quantization**
-- Optimized 4-bit precision format
-- Excellent quality preservation
-- 2-3x faster inference vs full precision
-- Ideal balance of quality and performance
+- BF16 (16-bit) floating point weights
+- Maximum quality, highest VRAM usage
+- Example: 9B model uses ~29GB VRAM
+- Best when quality is absolute priority
 
 **FP8 Quantization**
 - 8-bit floating point format
-- Minimal quality degradation
-- Best speed/quality balance
-- Recommended for most use cases requiring efficiency
+- ~50% memory reduction vs BF16
+- Minimal quality loss
+- Example: 9B FP8 uses ~15GB VRAM
+- **Recommended** for best balance
+
+**NVFP4 Quantization**
+- NVIDIA 4-bit floating point format
+- ~75% memory reduction vs BF16
+- Slight quality trade-off for maximum efficiency
+- Example: 9B NVFP4 uses ~8GB VRAM
+- Best for resource-constrained GPUs
+
+#### 🔄 How They Combine
+These are **independent concepts** you can mix:
+- **Model Size**: 4B vs 9B (parameter count)
+- **Quantization**: Base vs FP8 vs NVFP4 (memory precision)
+- **Inference Steps**: 4 steps (distilled) vs 50 steps (base) - your choice at generation time
+
+Example: You can use **9B NVFP4** (large model, low VRAM) with **4 steps** (fast generation)
 
 ---
 
 ## 💾 Hardware Requirements
 
-### Minimum (4B Model)
-- **GPU**: NVIDIA RTX 3090 / RTX 4070 or better
-- **VRAM**: 13GB+
+### Budget GPUs (4B NVFP4)
+- **GPU**: NVIDIA RTX 3060 (12GB) or better
+- **VRAM**: 4GB+
+- **RAM**: 16GB+
+- **Storage**: 15GB+ free space
+- **Best for**: Entry-level GPUs, maximum efficiency
+
+### Consumer GPUs (4B / 4B FP8)
+- **GPU**: NVIDIA RTX 3070/3090 / RTX 4070 or better
+- **VRAM**: 7-13GB
 - **RAM**: 16GB+
 - **Storage**: 20GB+ free space
-- **Best for**: Consumer GPUs, local development
+- **Best for**: Most users, great quality/performance balance
 
-### Recommended (9B / 9B NVFP4 Models)
+### High-end GPUs (9B FP8)
+- **GPU**: NVIDIA RTX 3090 Ti / RTX 4080 or better
+- **VRAM**: 15GB+
+- **RAM**: 32GB+
+- **Storage**: 35GB+ free space
+- **Best for**: Better quality, still accessible
+
+### Enthusiast GPUs (9B Base)
 - **GPU**: NVIDIA RTX 4090 or better
 - **VRAM**: 29GB+
 - **RAM**: 32GB+
 - **Storage**: 40GB+ free space
-- **Best for**: High-end quality, optimal performance
+- **Best for**: Maximum quality, research
 
 ### Software
 - **OS**: Windows 10/11, Linux, macOS
@@ -213,19 +247,21 @@ These models are **gated** and require authentication.
 ### Basic Generation
 
 1. **Set your Hugging Face token** (required on first use)
-2. **Select a model**: Choose from 6 variants based on your hardware and needs
-   - **4B Models** (Consumer GPUs: RTX 3090/4070+):
-     - 4B - Full precision
-     - 4B NVFP4 - Optimized quantized
-     - 4B FP8 - Maximum efficiency
-   - **9B Models** (High-end GPUs: RTX 4090+):
-     - 9B - Highest quality
-     - 9B NVFP4 - Performance-optimized
-     - 9B FP8 - Speed/quality balance
+2. **Select a model**: Choose from 6 variants based on your GPU VRAM
+   - **4B Models** (Consumer GPUs, Apache 2.0 License):
+     - 4B Base (~13GB VRAM) - Full precision
+     - 4B FP8 (~7GB VRAM) - **RECOMMENDED** - Best balance
+     - 4B NVFP4 (~4GB VRAM) - Lowest VRAM
+   - **9B Models** (High-end GPUs, Non-Commercial License):
+     - 9B Base (~29GB VRAM) - Highest quality
+     - 9B FP8 (~15GB VRAM) - **RECOMMENDED** - Best balance
+     - 9B NVFP4 (~8GB VRAM) - Accessible high quality
 3. **Enter a prompt**: Be specific and descriptive
 4. **Click "Generate Image"**
-5. **Wait a few seconds** (first generation loads the model)
+5. **Wait a few seconds** (first generation loads the model - 30-60 seconds)
 6. **Enjoy your image!**
+
+💡 **First time users**: Start with **4B FP8** - it works on most GPUs and offers excellent quality!
 
 ### Advanced Settings
 
@@ -280,15 +316,24 @@ A steaming cup of coffee on a wooden table, morning light, cozy atmosphere
 
 ## 💡 Tips for Better Results
 
+### Prompting Tips
 1. **Be specific and descriptive** in your prompts
 2. **Include style keywords**: "photorealistic", "oil painting", "digital art"
 3. **Add lighting details**: "golden hour", "studio lighting", "dramatic shadows"
 4. **Specify composition**: "close-up", "wide angle", "aerial view"
-5. **Start with 4B models** to test prompts (faster, less VRAM)
-6. **Try quantized variants** (NVFP4/FP8) for better performance with similar quality
-7. **Use FP8 models** for the best speed/quality balance
-8. **Keep guidance scale around 4.0** for best balance
-9. **Stick to 4 inference steps** for optimal speed/quality (models are optimized for this)
+
+### Model Selection Tips
+5. **Start with 4B FP8** - best balance for testing (works on most GPUs)
+6. **Use FP8 variants** for optimal speed/quality/VRAM balance - **RECOMMENDED**
+7. **Try NVFP4 for limited VRAM** - 75% memory savings with good quality
+8. **Upgrade to 9B FP8** if you have 16GB+ VRAM for better quality
+
+### Generation Settings
+9. **Use 4 inference steps** - models are specifically optimized for this
+10. **Keep guidance scale around 4.0** for best results
+11. **Standard resolutions**: 1024x1024, 1024x768, 768x1024
+
+💡 **Pro Tip**: Distillation (4 steps) and quantization (FP8/NVFP4) are independent! You can use a large 9B model with low VRAM by choosing NVFP4, and still get fast generation with 4 steps.
 
 ---
 

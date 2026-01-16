@@ -44,7 +44,7 @@ def load_model(model_choice):
     dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
     
     # 4B Models
-    if model_choice == "FLUX.2 klein 4B (~13GB VRAM)":
+    if "4B (~13GB" in model_choice or model_choice == "FLUX.2 klein 4B (~13GB VRAM)":
         if pipe_4b is None:
             print("Loading FLUX.2 klein 4B model...")
             pipe_4b = Flux2KleinPipeline.from_pretrained(
@@ -60,23 +60,7 @@ def load_model(model_choice):
         current_model = pipe_4b
         return pipe_4b
     
-    elif model_choice == "FLUX.2 klein 4B NVFP4 (~13GB VRAM - Quantized)":
-        if pipe_4b_nvfp4 is None:
-            print("Loading FLUX.2 klein 4B NVFP4 (quantized) model...")
-            pipe_4b_nvfp4 = Flux2KleinPipeline.from_pretrained(
-                "black-forest-labs/FLUX.2-klein-4b-nvfp4", 
-                torch_dtype=dtype,
-                token=hf_token
-            )
-            if torch.cuda.is_available():
-                pipe_4b_nvfp4.enable_model_cpu_offload()
-            else:
-                pipe_4b_nvfp4 = pipe_4b_nvfp4.to(device)
-            print("FLUX.2 klein 4B NVFP4 model loaded successfully!")
-        current_model = pipe_4b_nvfp4
-        return pipe_4b_nvfp4
-    
-    elif model_choice == "FLUX.2 klein 4B FP8 (~13GB VRAM - Quantized)":
+    elif "4B FP8" in model_choice:
         if pipe_4b_fp8 is None:
             print("Loading FLUX.2 klein 4B FP8 (quantized) model...")
             pipe_4b_fp8 = Flux2KleinPipeline.from_pretrained(
@@ -92,8 +76,24 @@ def load_model(model_choice):
         current_model = pipe_4b_fp8
         return pipe_4b_fp8
     
+    elif "4B NVFP4" in model_choice:
+        if pipe_4b_nvfp4 is None:
+            print("Loading FLUX.2 klein 4B NVFP4 (quantized) model...")
+            pipe_4b_nvfp4 = Flux2KleinPipeline.from_pretrained(
+                "black-forest-labs/FLUX.2-klein-4b-nvfp4", 
+                torch_dtype=dtype,
+                token=hf_token
+            )
+            if torch.cuda.is_available():
+                pipe_4b_nvfp4.enable_model_cpu_offload()
+            else:
+                pipe_4b_nvfp4 = pipe_4b_nvfp4.to(device)
+            print("FLUX.2 klein 4B NVFP4 model loaded successfully!")
+        current_model = pipe_4b_nvfp4
+        return pipe_4b_nvfp4
+    
     # 9B Models
-    elif model_choice == "FLUX.2 klein 9B (~29GB VRAM)":
+    elif "9B (~29GB" in model_choice or model_choice == "FLUX.2 klein 9B (~29GB VRAM)":
         if pipe_9b is None:
             print("Loading FLUX.2 klein 9B model...")
             pipe_9b = Flux2KleinPipeline.from_pretrained(
@@ -109,23 +109,7 @@ def load_model(model_choice):
         current_model = pipe_9b
         return pipe_9b
     
-    elif model_choice == "FLUX.2 klein 9B NVFP4 (~29GB VRAM - Quantized)":
-        if pipe_9b_nvfp4 is None:
-            print("Loading FLUX.2 klein 9B NVFP4 (quantized) model...")
-            pipe_9b_nvfp4 = Flux2KleinPipeline.from_pretrained(
-                "black-forest-labs/FLUX.2-klein-9b-nvfp4", 
-                torch_dtype=dtype,
-                token=hf_token
-            )
-            if torch.cuda.is_available():
-                pipe_9b_nvfp4.enable_model_cpu_offload()
-            else:
-                pipe_9b_nvfp4 = pipe_9b_nvfp4.to(device)
-            print("FLUX.2 klein 9B NVFP4 model loaded successfully!")
-        current_model = pipe_9b_nvfp4
-        return pipe_9b_nvfp4
-    
-    else:  # 9B FP8
+    elif "9B FP8" in model_choice:
         if pipe_9b_fp8 is None:
             print("Loading FLUX.2 klein 9B FP8 (quantized) model...")
             pipe_9b_fp8 = Flux2KleinPipeline.from_pretrained(
@@ -140,6 +124,22 @@ def load_model(model_choice):
             print("FLUX.2 klein 9B FP8 model loaded successfully!")
         current_model = pipe_9b_fp8
         return pipe_9b_fp8
+    
+    else:  # 9B NVFP4
+        if pipe_9b_nvfp4 is None:
+            print("Loading FLUX.2 klein 9B NVFP4 (quantized) model...")
+            pipe_9b_nvfp4 = Flux2KleinPipeline.from_pretrained(
+                "black-forest-labs/FLUX.2-klein-9b-nvfp4", 
+                torch_dtype=dtype,
+                token=hf_token
+            )
+            if torch.cuda.is_available():
+                pipe_9b_nvfp4.enable_model_cpu_offload()
+            else:
+                pipe_9b_nvfp4 = pipe_9b_nvfp4.to(device)
+            print("FLUX.2 klein 9B NVFP4 model loaded successfully!")
+        current_model = pipe_9b_nvfp4
+        return pipe_9b_nvfp4
 
 def generate_image(
     prompt,
@@ -224,10 +224,10 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator") as demo:
     Generate high-quality images from text descriptions using Black Forest Labs' FLUX.2 [klein] models.
     
     **Features:**
-    - Sub-second image generation with outstanding quality
-    - Excellent prompt adherence and output diversity
-    - Real-time generation capabilities
-    - Choose between 4B (consumer GPUs) or 9B (high-end GPUs) models
+    - ⚡ Sub-second image generation with outstanding quality
+    - 🎯 Step-distilled to 4 inference steps for optimal speed
+    - 🗜️ Multiple quantization options (Base/FP8/NVFP4) for different VRAM requirements
+    - 💻 Choose between 4B (consumer GPUs) or 9B (high-end GPUs) models
     
     *Note: First generation will take longer as the model loads into memory.*
     """)
@@ -275,15 +275,15 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator") as demo:
             model_selector = gr.Radio(
                 choices=[
                     "FLUX.2 klein 4B (~13GB VRAM)",
-                    "FLUX.2 klein 4B NVFP4 (~13GB VRAM - Quantized)",
-                    "FLUX.2 klein 4B FP8 (~13GB VRAM - Quantized)",
+                    "FLUX.2 klein 4B FP8 (~7GB VRAM - Quantized)",
+                    "FLUX.2 klein 4B NVFP4 (~4GB VRAM - Quantized)",
                     "FLUX.2 klein 9B (~29GB VRAM)",
-                    "FLUX.2 klein 9B NVFP4 (~29GB VRAM - Quantized)",
-                    "FLUX.2 klein 9B FP8 (~29GB VRAM - Quantized)"
+                    "FLUX.2 klein 9B FP8 (~15GB VRAM - Quantized)",
+                    "FLUX.2 klein 9B NVFP4 (~8GB VRAM - Quantized)"
                 ],
-                value="FLUX.2 klein 4B (~13GB VRAM)",
+                value="FLUX.2 klein 4B FP8 (~7GB VRAM - Quantized)",
                 label="Model Selection",
-                info="Choose base model (4B/9B) or quantized variants (NVFP4/FP8) for optimized performance"
+                info="4B = consumer GPUs, 9B = high-end GPUs | Base = full precision, FP8 = best balance, NVFP4 = lowest VRAM"
             )
             
             with gr.Accordion("Advanced Settings", open=False):
@@ -362,6 +362,25 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator") as demo:
     
     gr.Markdown("""
     ---
+    ### 📚 Understanding Model Options
+    
+    #### 🎯 Distillation (Inference Steps)
+    - **Distilled (4 steps)**: Fast mode optimized for sub-second generation - **RECOMMENDED**
+    - **Base (50 steps)**: Traditional diffusion with more refinement passes - slower, not necessarily better
+    - The models are specifically trained for 4 steps - use that setting!
+    
+    #### 🗜️ Quantization (Memory Precision)
+    - **Base (BF16)**: Full 16-bit precision - highest quality, most VRAM (~13GB for 4B, ~29GB for 9B)
+    - **FP8**: 8-bit precision - ~50% less VRAM, minimal quality loss - **BEST BALANCE**
+    - **NVFP4**: 4-bit precision - ~75% less VRAM, slight quality trade-off - best for limited VRAM
+    
+    #### 📦 Model Size
+    - **4B Models**: 4 billion parameters, consumer GPUs (RTX 3090/4070+), Apache 2.0 license
+    - **9B Models**: 9 billion parameters, high-end GPUs (RTX 4090+), non-commercial license
+    
+    💡 **Tip**: These are independent! You can use a **9B NVFP4** (large model, low VRAM) with **4 steps** (fast generation).
+    
+    ---
     ### About FLUX.2 [klein]
     
     The FLUX.2 [klein] model family are Black Forest Labs' **fastest image models to date**. FLUX.2 [klein] unifies generation and editing in a single compact architecture, delivering **state-of-the-art quality with end-to-end inference in as low as under a second**. Built for applications that require real-time image generation without sacrificing quality.
@@ -376,17 +395,17 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator") as demo:
     
     ### Model Information:
     
-    **4B Models** (Consumer GPUs: RTX 3090/4070+, ~13GB VRAM, Apache 2.0 ✓)
-    - **4B Base**: Full precision, 4 billion parameters
-    - **4B NVFP4**: NVFP4 quantized for optimized performance
-    - **4B FP8**: FP8 quantized for maximum efficiency
+    **4B Models** (Consumer GPUs, Apache 2.0 ✓ Commercial Use)
+    - **4B Base**: Full BF16 precision, ~13GB VRAM (RTX 3090/4070+)
+    - **4B FP8**: 8-bit quantized, ~7GB VRAM (RTX 3070+) - **RECOMMENDED**
+    - **4B NVFP4**: 4-bit quantized, ~4GB VRAM (RTX 3060+)
     
-    **9B Models** (High-end GPUs: RTX 4090+, ~29GB VRAM, Non-Commercial License)
-    - **9B Base**: Full BF16 precision, 9B flow + 8B Qwen3 text embedder
-    - **9B NVFP4**: NVFP4 quantized for optimized inference
-    - **9B FP8**: FP8 quantized for faster generation
+    **9B Models** (High-end GPUs, Non-Commercial License)
+    - **9B Base**: Full BF16 precision, ~29GB VRAM (RTX 4090+)
+    - **9B FP8**: 8-bit quantized, ~15GB VRAM (RTX 3090 Ti+) - **RECOMMENDED**
+    - **9B NVFP4**: 4-bit quantized, ~8GB VRAM (RTX 3070+)
     
-    All quantized variants offer similar quality to base models with improved performance and memory efficiency.
+    All quantized variants maintain excellent quality with significantly reduced VRAM usage.
     
     ### Tips for better results:
     - Be specific and descriptive in your prompts
@@ -437,14 +456,14 @@ if __name__ == "__main__":
     print("FLUX.2 [klein] Gradio UI")
     print("=" * 60)
     print("\nAvailable models:")
-    print("  4B Models (Consumer GPUs: RTX 3090/4070+, ~13GB VRAM):")
-    print("    - 4B (Full Precision)")
-    print("    - 4B NVFP4 (Quantized)")
-    print("    - 4B FP8 (Quantized)")
-    print("  9B Models (High-end GPUs: RTX 4090+, ~29GB VRAM):")
-    print("    - 9B (Full Precision)")
-    print("    - 9B NVFP4 (Quantized)")
-    print("    - 9B FP8 (Quantized)")
+    print("  4B Models (Consumer GPUs, Apache 2.0 License):")
+    print("    - 4B Base (~13GB VRAM) - Full precision")
+    print("    - 4B FP8 (~7GB VRAM) - RECOMMENDED - Best balance")
+    print("    - 4B NVFP4 (~4GB VRAM) - Lowest VRAM requirement")
+    print("  9B Models (High-end GPUs, Non-Commercial License):")
+    print("    - 9B Base (~29GB VRAM) - Highest quality")
+    print("    - 9B FP8 (~15GB VRAM) - RECOMMENDED - Best balance")
+    print("    - 9B NVFP4 (~8GB VRAM) - High quality on mid-range GPUs")
     print()
     print("⚠ You will need to set your Hugging Face token in the web interface")
     print()
@@ -456,11 +475,21 @@ if __name__ == "__main__":
         vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
         print(f"VRAM: {vram:.1f}GB")
         if vram >= 28:
-            print("✓ Sufficient VRAM for both 4B and 9B models")
+            print("✓ Excellent! Can run all models including 9B Base")
+            print("  Recommended: 9B FP8 for best balance")
+        elif vram >= 14:
+            print("✓ Great! Can run 9B FP8 (~15GB) or any 4B model")
+            print("  Recommended: 9B FP8 for quality or 4B FP8 for speed")
         elif vram >= 12:
-            print("✓ Sufficient VRAM for 4B model (~13GB required)")
+            print("✓ Good! Can run 4B Base (~13GB) or 4B FP8 (~7GB)")
+            print("  Recommended: 4B FP8 for best balance")
+        elif vram >= 6:
+            print("✓ Sufficient for 4B FP8 (~7GB)")
+            print("  Recommended: 4B FP8")
+        elif vram >= 4:
+            print("⚠ Limited VRAM - use 4B NVFP4 (~4GB)")
         else:
-            print("⚠ Warning: May not have sufficient VRAM. 4B model requires ~13GB")
+            print("⚠ Warning: Very limited VRAM. 4B NVFP4 requires ~4GB minimum")
     else:
         print("⚠ No CUDA GPU detected. Generation will be very slow on CPU.")
     
