@@ -269,8 +269,12 @@ These models are **gated** and require authentication.
 <summary>Click to expand</summary>
 
 #### Resolution
-- **Width/Height**: 256-2048 pixels (steps of 64)
-- **Recommended**: 1024x1024, 1024x768, 768x1024
+- **Size Presets**: Quick selection for common aspect ratios
+  - Square: 1024x1024
+  - Landscape: 1024x768, 1024x576, 1344x576, 1280x720, 1536x640
+  - Portrait: 768x1024, 576x1024, 576x1344
+- **Custom**: Manually adjust width/height (256-2048 pixels, steps of 8)
+- **Recommended**: Use presets for best results
 
 #### Guidance Scale
 - **Range**: 1.0-10.0
