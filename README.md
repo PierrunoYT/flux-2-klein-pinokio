@@ -14,15 +14,19 @@
 
 ## 🌟 Overview
 
-A beautiful Gradio web interface for **FLUX.2 [klein]** models from Black Forest Labs. Generate stunning images from text descriptions in under a second with state-of-the-art quality. The FLUX.2 [klein] model family are Black Forest Labs' **fastest image models to date**, unifying generation and editing in a single compact architecture with **end-to-end inference in as low as under a second**. Choose from **six model variants** (4B and 9B base models plus NVFP4 and FP8 quantized versions) optimized for different hardware configurations and use cases.
+A beautiful Gradio web interface for **FLUX.2 [klein]** models from Black Forest Labs. Generate stunning images from text descriptions in under a second with state-of-the-art quality. The FLUX.2 [klein] model family are Black Forest Labs' **fastest image models to date**, unifying generation and editing in a single compact architecture with **end-to-end inference in as low as under a second**. 
+
+**Currently supports:** FLUX.2 klein 4B and 9B base models.
+
+⚠️ **Note:** FP8 and NVFP4 quantized variants are not currently supported in this interface as they require a different loading method. Use [ComfyUI](https://docs.comfy.org/tutorials/flux/flux-2-klein) if you need quantized models for lower VRAM usage.
 
 ### ✨ Key Features
 
 - ⚡ **Sub-second image generation** with outstanding quality
 - 🎯 **Pareto frontier performance** - matches or exceeds models 5x its size in under half a second
 - 🔄 **Unified architecture** - text-to-image and image-to-image multi-reference editing in one model
-- 💻 **Consumer GPU support** (RTX 3090/4070+)
-- 🎛️ **Six model variants**: 4B, 4B NVFP4, 4B FP8, 9B, 9B NVFP4, 9B FP8
+- 💻 **Consumer GPU support** (RTX 3090/4070+ for 4B, RTX 4090+ for 9B)
+- 🎛️ **Two model variants**: 4B Base (~13GB VRAM), 9B Base (~29GB VRAM)
 - 🖼️ **Flexible resolution** support (256x256 to 2048x2048)
 - ⚙️ **Optimized for speed** - step-distilled to 4 inference steps
 - 🎨 **Excellent prompt adherence** and creative exploration
@@ -34,52 +38,40 @@ A beautiful Gradio web interface for **FLUX.2 [klein]** models from Black Forest
 
 ## 🤖 Model Information
 
-### 4B Models (Consumer GPUs: RTX 3090/4070+, ~13GB VRAM)
+### Currently Supported Models
 
 #### FLUX.2 [klein] 4B - Full Precision
-- **Size**: 4 billion parameters (full precision)
+- **Size**: 4 billion parameters (BF16 precision)
+- **VRAM**: ~13GB
 - **License**: Apache 2.0 (✓ commercial use allowed)
-- **Best for**: Production use, commercial applications
-- **Performance**: Fast generation on consumer GPUs
+- **Best for**: Production use, commercial applications, consumer GPUs
+- **Performance**: Fast generation on RTX 3090/4070+ GPUs
 - **Repository**: [FLUX.2-klein-4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B)
-
-#### FLUX.2 [klein] 4B NVFP4 - Quantized
-- **Size**: 4 billion parameters (NVFP4 quantized)
-- **License**: Apache 2.0 (✓ commercial use allowed)
-- **Best for**: Optimized performance, edge deployment
-- **Performance**: Faster inference with minimal quality loss
-- **Repository**: [FLUX.2-klein-4b-nvfp4](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-nvfp4)
-
-#### FLUX.2 [klein] 4B FP8 - Quantized
-- **Size**: 4 billion parameters (FP8 quantized)
-- **License**: Apache 2.0 (✓ commercial use allowed)
-- **Best for**: Maximum efficiency, resource-constrained environments
-- **Performance**: Excellent speed/quality balance
-- **Repository**: [FLUX.2-klein-4b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8)
-
-### 9B Models (High-end GPUs: RTX 4090+, ~29GB VRAM)
 
 #### FLUX.2 [klein] 9B - Full Precision
 - **Size**: 9 billion parameters (9B flow model + 8B Qwen3 text embedder)
+- **VRAM**: ~29GB
 - **Architecture**: Rectified flow transformer (full BF16 weights)
 - **License**: Non-Commercial License
-- **Best for**: Highest quality, research applications
+- **Best for**: Highest quality, research applications, high-end GPUs
 - **Performance**: State-of-the-art quality, matches models 5x its size
 - **Repository**: [FLUX.2-klein-9B](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B)
 
-#### FLUX.2 [klein] 9B NVFP4 - Quantized
-- **Size**: 9 billion parameters (NVFP4 quantized)
-- **License**: Non-Commercial License
-- **Best for**: Performance-optimized high-quality inference
-- **Performance**: Faster than full precision with excellent quality
-- **Repository**: [FLUX.2-klein-9b-nvfp4](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-nvfp4)
+### About Quantized Models (FP8/NVFP4)
 
-#### FLUX.2 [klein] 9B FP8 - Quantized
-- **Size**: 9 billion parameters (FP8 quantized)
-- **License**: Non-Commercial License
-- **Best for**: Balanced high-quality and performance
-- **Performance**: Best speed/quality balance for 9B
-- **Repository**: [FLUX.2-klein-9b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8)
+⚠️ **Not Currently Supported in This Interface**
+
+While Black Forest Labs provides FP8 and NVFP4 quantized versions of both 4B and 9B models, they use a different file structure (`.safetensors` format) and cannot be loaded with the standard diffusers `from_pretrained()` method.
+
+**Quantized models available (use ComfyUI instead):**
+- [FLUX.2-klein-4b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8) - ~7GB VRAM
+- [FLUX.2-klein-4b-nvfp4](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-nvfp4) - ~4GB VRAM
+- [FLUX.2-klein-9b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8) - ~15GB VRAM
+- [FLUX.2-klein-9b-nvfp4](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-nvfp4) - ~8GB VRAM
+
+**For quantized models**, use [ComfyUI](https://docs.comfy.org/tutorials/flux/flux-2-klein) which has native support for loading these formats.
+
+### Model Capabilities
 
 All models support:
 - Text-to-image generation
@@ -90,73 +82,45 @@ All models support:
 ### Understanding Model Concepts
 
 #### 🎯 Model Distillation (Inference Speed)
-FLUX.2 [klein] is **step-distilled** to 4 inference steps for optimal generation speed:
+FLUX.2 [klein] models are **step-distilled** to 4 inference steps for optimal generation speed:
 - Sub-second generation with optimized performance
 - The models are specifically trained for 4 steps
 - No need to adjust - default settings provide the best results
 
-#### 🗜️ Model Quantization (Memory Precision)
-Reduces VRAM usage and increases speed by using lower-precision numbers:
+#### 📦 Model Sizes
+- **4B Model**: 4 billion parameters, ~13GB VRAM (BF16 precision)
+- **9B Model**: 9 billion parameters, ~29GB VRAM (BF16 precision)
 
-**Full Precision (Base Models)**
-- BF16 (16-bit) floating point weights
-- Maximum quality, highest VRAM usage
-- Example: 9B model uses ~29GB VRAM
-- Best when quality is absolute priority
+Both use full BF16 (16-bit) precision for maximum quality.
 
-**FP8 Quantization**
-- 8-bit floating point format
-- ~50% memory reduction vs BF16
-- Minimal quality loss
-- Example: 9B FP8 uses ~15GB VRAM
-- **Recommended** for best balance
-
-**NVFP4 Quantization**
-- NVIDIA 4-bit floating point format
-- ~75% memory reduction vs BF16
-- Slight quality trade-off for maximum efficiency
-- Example: 9B NVFP4 uses ~8GB VRAM
-- Best for resource-constrained GPUs
-
-#### 🔄 How They Combine
-These are **independent concepts** you can choose:
-- **Model Size**: 4B vs 9B (parameter count)
-- **Quantization**: Base vs FP8 vs NVFP4 (memory precision)
-- **Inference Steps**: Optimized for 4 steps (distilled for fast generation)
-
-Example: You can use **9B NVFP4** (large model, low VRAM) for high-quality sub-second generation
+#### 🗜️ About Quantization (Not Supported Here)
+While FP8 and NVFP4 quantized versions exist (offering 50-75% VRAM reduction), they require a different loading method and are not supported in this Gradio interface. If you need quantized models for lower VRAM usage, use [ComfyUI](https://docs.comfy.org/tutorials/flux/flux-2-klein) instead.
 
 ---
 
 ## 💾 Hardware Requirements
 
-### Budget GPUs (4B NVFP4)
-- **GPU**: NVIDIA RTX 3060 (12GB) or better
-- **VRAM**: 4GB+
-- **RAM**: 16GB+
-- **Storage**: 15GB+ free space
-- **Best for**: Entry-level GPUs, maximum efficiency
-
-### Consumer GPUs (4B / 4B FP8)
-- **GPU**: NVIDIA RTX 3070/3090 / RTX 4070 or better
-- **VRAM**: 7-13GB
+### For 4B Base Model
+- **GPU**: NVIDIA RTX 3090, RTX 4070 or better
+- **VRAM**: 13GB minimum
 - **RAM**: 16GB+
 - **Storage**: 20GB+ free space
-- **Best for**: Most users, great quality/performance balance
+- **Best for**: Consumer GPUs, commercial applications
 
-### High-end GPUs (9B FP8)
-- **GPU**: NVIDIA RTX 3090 Ti / RTX 4080 or better
-- **VRAM**: 15GB+
-- **RAM**: 32GB+
-- **Storage**: 35GB+ free space
-- **Best for**: Better quality, still accessible
-
-### Enthusiast GPUs (9B Base)
+### For 9B Base Model
 - **GPU**: NVIDIA RTX 4090 or better
-- **VRAM**: 29GB+
+- **VRAM**: 29GB minimum
 - **RAM**: 32GB+
 - **Storage**: 40GB+ free space
-- **Best for**: Maximum quality, research
+- **Best for**: Maximum quality, research, high-end GPUs
+
+### For Lower VRAM GPUs
+If you have less than 13GB VRAM, consider using:
+- **ComfyUI** with quantized models (FP8/NVFP4)
+- **4B FP8**: ~7GB VRAM (RTX 3070+)
+- **4B NVFP4**: ~4GB VRAM (RTX 3060+)
+- **9B FP8**: ~15GB VRAM (RTX 3090 Ti+)
+- **9B NVFP4**: ~8GB VRAM (RTX 3070+)
 
 ### Software
 - **OS**: Windows 10/11, Linux, macOS
@@ -248,21 +212,15 @@ These models are **gated** and require authentication.
 ### Basic Generation
 
 1. **Set your Hugging Face token** (required on first use)
-2. **Select a model**: Choose from 6 variants based on your GPU VRAM
-   - **4B Models** (Consumer GPUs, Apache 2.0 License):
-     - 4B Base (~13GB VRAM) - Full precision
-     - 4B FP8 (~7GB VRAM) - **RECOMMENDED** - Best balance
-     - 4B NVFP4 (~4GB VRAM) - Lowest VRAM
-   - **9B Models** (High-end GPUs, Non-Commercial License):
-     - 9B Base (~29GB VRAM) - Highest quality
-     - 9B FP8 (~15GB VRAM) - **RECOMMENDED** - Best balance
-     - 9B NVFP4 (~8GB VRAM) - Accessible high quality
+2. **Select a model**: Choose based on your GPU VRAM
+   - **4B Base** (~13GB VRAM) - Consumer GPUs (RTX 3090/4070+), Apache 2.0 License
+   - **9B Base** (~29GB VRAM) - High-end GPUs (RTX 4090+), Non-Commercial License
 3. **Enter a prompt**: Be specific and descriptive
 4. **Click "Generate Image"**
 5. **Wait a few seconds** (first generation loads the model - 30-60 seconds)
 6. **Enjoy your image!**
 
-💡 **First time users**: Start with **4B FP8** - it works on most GPUs and offers excellent quality!
+💡 **First time users**: Start with **4B Base** if you have 13GB+ VRAM. If you have less VRAM, use ComfyUI with quantized models instead.
 
 ### Output Files
 
@@ -353,18 +311,17 @@ A steaming cup of coffee on a wooden table, morning light, cozy atmosphere
 4. **Specify composition**: "close-up", "wide angle", "aerial view"
 
 ### Model Selection Tips
-5. **Start with 4B FP8** - best balance for testing (works on most GPUs)
-6. **Use FP8 variants** for optimal speed/quality/VRAM balance - **RECOMMENDED**
-7. **Try NVFP4 for limited VRAM** - 75% memory savings with good quality
-8. **Upgrade to 9B FP8** if you have 16GB+ VRAM for better quality
+5. **Use 4B Base** if you have 13GB+ VRAM - works on consumer GPUs (RTX 3090/4070+)
+6. **Use 9B Base** if you have 29GB+ VRAM for highest quality (RTX 4090+)
+7. **Need lower VRAM?** Use ComfyUI with quantized models (FP8/NVFP4)
 
 ### Generation Settings
-9. **Use default 4 inference steps** - models are specifically optimized for this
-10. **Keep guidance scale around 3.5-4.5** for best results
-11. **Use size presets** for quick resolution selection
-12. **Standard resolutions**: 1024x1024, 1024x768, 768x1024, 1280x720, 1536x640
+8. **Use default 4 inference steps** - models are specifically optimized for this
+9. **Keep guidance scale around 3.5-4.5** for best results
+10. **Use size presets** for quick resolution selection
+11. **Standard resolutions**: 1024x1024, 1024x768, 768x1024, 1280x720, 1536x640
 
-💡 **Pro Tip**: Quantization (FP8/NVFP4) lets you use larger models on lower-VRAM GPUs! Choose **9B NVFP4** for high quality on mid-range GPUs, or **4B FP8** for best balance on consumer hardware.
+💡 **Pro Tip**: If you have limited VRAM (less than 13GB), check out [ComfyUI](https://docs.comfy.org/tutorials/flux/flux-2-klein) which supports quantized models that use 50-75% less VRAM!
 
 ---
 
@@ -434,9 +391,11 @@ flux-2-klein-pinokio/
 - Try creating a new token with read permissions
 
 ### "Out of memory" errors
+- Ensure you have at least 13GB VRAM for 4B model or 29GB for 9B model
 - Close other applications to free VRAM
 - Use the 4B model instead of 9B
-- Reduce resolution (e.g., 512x512)
+- Reduce resolution (e.g., 768x768 or 512x512)
+- Consider using ComfyUI with quantized models (FP8/NVFP4) if you have less VRAM
 - Restart the application
 
 ### Slow generation
@@ -459,15 +418,15 @@ This Gradio interface is released under the **MIT License**.
 
 ### Model Licenses
 
-**4B Models (4B, 4B NVFP4, 4B FP8)**
+**4B Base Model**
 - **License**: Apache 2.0
 - **Usage**: ✓ Commercial use allowed
-- **Best for**: Production applications, commercial products, edge deployment
+- **Best for**: Production applications, commercial products
 
-**9B Models (9B, 9B NVFP4, 9B FP8)**
+**9B Base Model**
 - **License**: FLUX Non-Commercial License
 - **Usage**: Non-commercial use only
-- **Best for**: Research, personal projects, evaluation, non-commercial applications
+- **Best for**: Research, personal projects, evaluation
 
 **Important**: You must accept the model license on Hugging Face before use. See the respective [model cards](https://huggingface.co/black-forest-labs) for full license terms and acceptable use policies.
 
@@ -486,15 +445,15 @@ This Gradio interface is released under the **MIT License**.
 
 ### Model Cards
 
-**4B Models** (Apache 2.0 License)
-- [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) - Full precision
-- [FLUX.2 klein 4B NVFP4](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-nvfp4) - NVFP4 quantized
-- [FLUX.2 klein 4B FP8](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8) - FP8 quantized
+**Supported in This Interface:**
+- [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) - Full precision, Apache 2.0
+- [FLUX.2 klein 9B](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B) - Full precision, Non-Commercial
 
-**9B Models** (Non-Commercial License)
-- [FLUX.2 klein 9B](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B) - Full precision
-- [FLUX.2 klein 9B NVFP4](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-nvfp4) - NVFP4 quantized
-- [FLUX.2 klein 9B FP8](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8) - FP8 quantized
+**Quantized Models (Use ComfyUI):**
+- [FLUX.2 klein 4B FP8](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8) - ~7GB VRAM
+- [FLUX.2 klein 4B NVFP4](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-nvfp4) - ~4GB VRAM
+- [FLUX.2 klein 9B FP8](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8) - ~15GB VRAM
+- [FLUX.2 klein 9B NVFP4](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-nvfp4) - ~8GB VRAM
 
 ### Resources
 - [Black Forest Labs Official Site](https://blackforestlabs.ai/)
@@ -502,6 +461,7 @@ This Gradio interface is released under the **MIT License**.
 - [FLUX GitHub Repository](https://github.com/black-forest-labs/flux)
 - [Diffusers Documentation](https://huggingface.co/docs/diffusers)
 - [BFL API](https://bfl.ai/)
+- [ComfyUI FLUX.2 Klein Tutorial](https://docs.comfy.org/tutorials/flux/flux-2-klein) - For quantized models
 
 ---
 
