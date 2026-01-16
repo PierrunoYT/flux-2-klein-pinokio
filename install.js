@@ -17,7 +17,8 @@ module.exports = {
         params: {
           venv: "env",
           xformers: false,
-          flashattn: false
+          flashattn: false,
+          triton: true
         }
       }
     },
