@@ -1,4 +1,4 @@
-diffusers
+git+https://github.com/huggingface/diffusers.git
 gradio>=5.50.0
 transformers>=4.44.0
 accelerate>=0.25.0
