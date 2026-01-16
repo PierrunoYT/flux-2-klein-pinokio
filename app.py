@@ -5,6 +5,8 @@ from PIL import Image
 import numpy as np
 import os
 import random
+from datetime import datetime
+import uuid
 
 # Configure Hugging Face Hub for better download performance and longer timeouts
 # Set timeout to 10 minutes (600 seconds) for large model downloads
@@ -36,6 +38,43 @@ DEFAULT_GUIDANCE = {
 }
 
 MAX_SEED = np.iinfo(np.int32).max
+
+# Create output directory for saved images
+OUTPUT_DIR = "outputs"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+def save_image_with_metadata(image, prompt, model_name, mode_name, width, height, steps, guidance, seed):
+    """Save image with unique filename and metadata"""
+    try:
+        # Generate unique filename with timestamp and UUID
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_id = str(uuid.uuid4())[:8]
+        filename = f"flux2_klein_{timestamp}_{unique_id}.png"
+        filepath = os.path.join(OUTPUT_DIR, filename)
+        
+        # Save image in PNG format (lossless, high quality)
+        image.save(filepath, format="PNG", optimize=True)
+        
+        # Also save metadata as text file
+        metadata_filename = f"flux2_klein_{timestamp}_{unique_id}_metadata.txt"
+        metadata_filepath = os.path.join(OUTPUT_DIR, metadata_filename)
+        
+        with open(metadata_filepath, 'w', encoding='utf-8') as f:
+            f.write(f"FLUX.2 [klein] Generation Metadata\n")
+            f.write(f"=" * 50 + "\n\n")
+            f.write(f"Prompt: {prompt}\n")
+            f.write(f"Model: {model_name}\n")
+            f.write(f"Mode: {mode_name}\n")
+            f.write(f"Dimensions: {width}x{height}\n")
+            f.write(f"Inference Steps: {steps}\n")
+            f.write(f"Guidance Scale: {guidance}\n")
+            f.write(f"Seed: {seed}\n")
+            f.write(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        
+        return filepath
+    except Exception as e:
+        print(f"Error saving image: {e}")
+        return None
 
 def set_hf_token(token):
     """Set the Hugging Face token for model loading"""
@@ -283,7 +322,19 @@ def generate_image(
         
         image = result.images[0]
         
-        return image, f"✓ Generated successfully with {model_name} model [{mode_name}]! Seed: {seed}", seed
+        # Save image with unique filename
+        saved_path = save_image_with_metadata(
+            image, prompt, model_name, mode_name, 
+            int(width), int(height), int(num_inference_steps), 
+            float(guidance_scale), seed
+        )
+        
+        if saved_path:
+            status_msg = f"✓ Generated successfully with {model_name} model [{mode_name}]!\n📁 Saved as: {os.path.basename(saved_path)}\n🌱 Seed: {seed}"
+        else:
+            status_msg = f"✓ Generated successfully with {model_name} model [{mode_name}]! (Warning: Could not save to disk)\n🌱 Seed: {seed}"
+        
+        return image, status_msg, seed
     
     except ValueError as e:
         error_msg = f"⚠ {str(e)}"
@@ -316,7 +367,7 @@ css = """
 # Create Gradio interface
 with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
     with gr.Column(elem_id="col-container"):
-    gr.Markdown("""
+    gr.Markdown(f"""
     # 🎨 FLUX.2 [klein] Image Generator
     
     Generate high-quality images from text descriptions using Black Forest Labs' FLUX.2 [klein] models.
@@ -326,6 +377,7 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
     - 🎯 Step-distilled to 4 inference steps for optimal speed
     - 🗜️ Multiple quantization options (Base/FP8/NVFP4) for different VRAM requirements
     - 💻 Choose between 4B (consumer GPUs) or 9B (high-end GPUs) models
+    - 💾 **Auto-save**: All images saved to `{OUTPUT_DIR}/` in PNG format with metadata
     
     *Note: First generation will take longer as the model loads into memory.*
     """)
@@ -634,6 +686,10 @@ if __name__ == "__main__":
     print("    - 9B Base (~29GB VRAM) - Highest quality")
     print("    - 9B FP8 (~15GB VRAM) - RECOMMENDED - Best balance")
     print("    - 9B NVFP4 (~8GB VRAM) - High quality on mid-range GPUs")
+    print()
+    print("💾 Images will be automatically saved to:")
+    print(f"   {os.path.abspath(OUTPUT_DIR)}/")
+    print("   Format: PNG (lossless) with metadata txt file")
     print()
     print("⚠ You will need to set your Hugging Face token in the web interface")
     print()

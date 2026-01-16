@@ -27,6 +27,7 @@ A beautiful Gradio web interface for **FLUX.2 [klein]** models from Black Forest
 - ⚙️ **Optimized for speed** - step-distilled to 4 inference steps
 - 🎨 **Excellent prompt adherence** and creative exploration
 - 🔧 **Advanced controls**: guidance scale, inference steps, seed control
+- 💾 **Auto-save images**: All generated images automatically saved to `outputs/` in PNG format with metadata
 - 📝 **Example prompts** included to get you started
 
 ---
@@ -262,6 +263,30 @@ These models are **gated** and require authentication.
 6. **Enjoy your image!**
 
 💡 **First time users**: Start with **4B FP8** - it works on most GPUs and offers excellent quality!
+
+### Output Files
+
+All generated images are automatically saved to the `outputs/` directory:
+- **Image files**: PNG format (lossless, high quality) with unique filenames
+- **Metadata files**: Accompanying .txt files with generation parameters
+- **Filename format**: `flux2_klein_YYYYMMDD_HHMMSS_[uuid].png`
+
+Example:
+```
+outputs/
+  ├── flux2_klein_20260116_143052_a3b9c1d2.png
+  ├── flux2_klein_20260116_143052_a3b9c1d2_metadata.txt
+  ├── flux2_klein_20260116_144328_f7e2a8b4.png
+  └── flux2_klein_20260116_144328_f7e2a8b4_metadata.txt
+```
+
+The metadata file contains:
+- Prompt used
+- Model and mode selected
+- Image dimensions
+- Inference steps and guidance scale
+- Seed value (for reproducibility)
+- Generation timestamp
 
 ### Advanced Settings
 
