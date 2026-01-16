@@ -3,6 +3,13 @@ import gradio as gr
 from diffusers import Flux2KleinPipeline
 from PIL import Image
 import numpy as np
+import os
+
+# Configure Hugging Face Hub for better download performance and longer timeouts
+# Set timeout to 5 minutes (300 seconds) instead of default 10 seconds
+os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "300"
+# Enable faster downloads with hf_xet if available (requires huggingface_hub[hf_xet])
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 
 # Global variables for the pipelines
 pipe_4b = None
