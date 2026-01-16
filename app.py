@@ -6,9 +6,11 @@ import numpy as np
 import os
 
 # Configure Hugging Face Hub for better download performance and longer timeouts
-# Set timeout to 5 minutes (300 seconds) instead of default 10 seconds
-os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "300"
-# Enable faster downloads with hf_xet if available (requires huggingface_hub[hf_xet])
+# Set timeout to 10 minutes (600 seconds) for large model downloads
+os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "600"
+# Set etag timeout separately (this is what causes the 10 second timeout errors)
+os.environ["HF_HUB_ETAG_TIMEOUT"] = "300"
+# Enable faster downloads with hf_xet if available
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 
 # Global variables for the pipelines
@@ -162,9 +164,9 @@ def generate_image(
         # Set device
         device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        # Handle seed
+        # Handle seed (use int32 max to avoid overflow warnings)
         if use_random_seed:
-            seed = np.random.randint(0, 2**32 - 1)
+            seed = np.random.randint(0, 2**31 - 1)
         
         generator = torch.Generator(device=device).manual_seed(int(seed))
         
