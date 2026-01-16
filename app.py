@@ -26,17 +26,6 @@ pipe_9b_fp8 = None
 current_model = None
 hf_token = None
 
-# Default settings per mode
-DEFAULT_STEPS = {
-    "Distilled (4 steps)": 4,
-    "Base (50 steps)": 50,
-}
-
-DEFAULT_GUIDANCE = {
-    "Distilled (4 steps)": 3.5,
-    "Base (50 steps)": 4.0,
-}
-
 MAX_SEED = np.iinfo(np.int32).max
 
 # Create output directory for saved images
@@ -114,10 +103,6 @@ def update_dimensions_from_image(image_list):
     new_height = max(256, min(1024, new_height))
     
     return new_width, new_height
-
-def update_steps_from_mode(mode_choice):
-    """Update the number of inference steps and guidance scale based on the selected mode."""
-    return DEFAULT_STEPS[mode_choice], DEFAULT_GUIDANCE[mode_choice]
 
 def apply_preset_size(preset):
     """Apply preset dimensions based on selected aspect ratio."""
@@ -247,7 +232,6 @@ def load_model(model_choice):
 def generate_image(
     prompt,
     input_images,
-    mode_choice,
     model_choice,
     height,
     width,
@@ -298,9 +282,9 @@ def generate_image(
         else:
             model_name = "9B"
         
-        mode_name = "Distilled" if "Distilled" in mode_choice else "Base"
+        mode_name = "Distilled"
         image_mode = " (with input images)" if image_list else ""
-        print(f"Generating image with FLUX.2 klein {model_name} [{mode_name}]{image_mode}")
+        print(f"Generating image with FLUX.2 klein {model_name}{image_mode}")
         print(f"Prompt: '{prompt}'")
         print(f"Parameters: {width}x{height}, steps: {num_inference_steps}, guidance: {guidance_scale}, seed: {seed}")
         
@@ -330,9 +314,9 @@ def generate_image(
         )
         
         if saved_path:
-            status_msg = f"✓ Generated successfully with {model_name} model [{mode_name}]!\n📁 Saved as: {os.path.basename(saved_path)}\n🌱 Seed: {seed}"
+            status_msg = f"✓ Generated successfully with {model_name} model!\n📁 Saved as: {os.path.basename(saved_path)}\n🌱 Seed: {seed}"
         else:
-            status_msg = f"✓ Generated successfully with {model_name} model [{mode_name}]! (Warning: Could not save to disk)\n🌱 Seed: {seed}"
+            status_msg = f"✓ Generated successfully with {model_name} model! (Warning: Could not save to disk)\n🌱 Seed: {seed}"
         
         return image, status_msg, seed
     
@@ -430,13 +414,6 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
                         rows=1,
                         show_label=False
                     )
-                
-                mode_choice = gr.Radio(
-                    label="Mode",
-                    choices=["Distilled (4 steps)", "Base (50 steps)"],
-                    value="Distilled (4 steps)",
-                    info="Distilled = fast (4 steps), Base = traditional (50 steps)"
-                )
                 
                 model_selector = gr.Radio(
                     choices=[
@@ -553,11 +530,6 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
         ---
         ### 📚 Understanding Model Options
         
-        #### 🎯 Mode (Inference Steps)
-        - **Distilled (4 steps)**: Fast mode optimized for sub-second generation - **RECOMMENDED**
-        - **Base (50 steps)**: Traditional diffusion with more refinement passes
-        - The models are specifically trained for 4 steps - use Distilled mode!
-        
         #### 🗜️ Quantization (Memory Precision)
         - **Base (BF16)**: Full 16-bit precision - highest quality, most VRAM (~13GB for 4B, ~29GB for 9B)
         - **FP8**: 8-bit precision - ~50% less VRAM, minimal quality loss - **BEST BALANCE**
@@ -567,7 +539,7 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
         - **4B Models**: 4 billion parameters, consumer GPUs (RTX 3090/4070+), Apache 2.0 license
         - **9B Models**: 9 billion parameters, high-end GPUs (RTX 4090+), non-commercial license
         
-        💡 **Pro Tip**: Mode, quantization, and model size are independent! You can use **9B NVFP4** (large model, low VRAM) with **Distilled mode** (4 steps, fast generation).
+        💡 **Note**: These models are step-distilled to 4 inference steps for optimal speed/quality balance. They achieve sub-second generation!
         
         ---
         ### 🖼️ Image Editing & Combining
@@ -606,7 +578,7 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
         
         ### Tips for better results:
         - Be specific and descriptive in your prompts
-        - Use **Distilled mode (4 steps)** for best speed/quality balance
+        - Models are optimized for 4 inference steps - default settings work best
         - Use guidance scale around 3.5-4.5 for best results
         - **Use size presets** for common aspect ratios (square, landscape, portrait, widescreen)
         - Standard resolutions: 1024x1024, 1024x768, 768x1024, 1280x720, 1536x640
@@ -640,13 +612,6 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
         outputs=[width_slider, height_slider]
     )
     
-    # Auto-update steps and guidance when mode changes
-    mode_choice.change(
-        fn=update_steps_from_mode,
-        inputs=[mode_choice],
-        outputs=[steps_slider, guidance_scale_slider]
-    )
-    
     # Auto-update dimensions when preset is selected
     size_preset.change(
         fn=apply_preset_size,
@@ -660,7 +625,6 @@ with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
         inputs=[
             prompt_input,
             input_images,
-            mode_choice,
             model_selector,
             height_slider,
             width_slider,

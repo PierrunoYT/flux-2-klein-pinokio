@@ -90,10 +90,10 @@ All models support:
 ### Understanding Model Concepts
 
 #### 🎯 Model Distillation (Inference Speed)
-FLUX.2 [klein] is **step-distilled** to optimize generation speed:
-- **Distilled Mode (4 steps)**: Sub-second generation, optimized performance
-- **Base Mode (50 steps)**: Traditional diffusion with more refinement steps
-- **Recommendation**: Use 4 steps - the models are specifically trained for this
+FLUX.2 [klein] is **step-distilled** to 4 inference steps for optimal generation speed:
+- Sub-second generation with optimized performance
+- The models are specifically trained for 4 steps
+- No need to adjust - default settings provide the best results
 
 #### 🗜️ Model Quantization (Memory Precision)
 Reduces VRAM usage and increases speed by using lower-precision numbers:
@@ -119,12 +119,12 @@ Reduces VRAM usage and increases speed by using lower-precision numbers:
 - Best for resource-constrained GPUs
 
 #### 🔄 How They Combine
-These are **independent concepts** you can mix:
+These are **independent concepts** you can choose:
 - **Model Size**: 4B vs 9B (parameter count)
 - **Quantization**: Base vs FP8 vs NVFP4 (memory precision)
-- **Inference Steps**: 4 steps (distilled) vs 50 steps (base) - your choice at generation time
+- **Inference Steps**: Optimized for 4 steps (distilled for fast generation)
 
-Example: You can use **9B NVFP4** (large model, low VRAM) with **4 steps** (fast generation)
+Example: You can use **9B NVFP4** (large model, low VRAM) for high-quality sub-second generation
 
 ---
 
@@ -307,9 +307,10 @@ The metadata file contains:
 - **Effect**: Higher values = stronger prompt adherence
 
 #### Inference Steps
-- **Range**: 1-50 steps
-- **Recommended**: 4 steps (models are optimized for this)
-- **Effect**: More steps = potentially better quality but slower
+- **Default**: 4 steps (models are step-distilled for this)
+- **Range**: 1-100 steps available (advanced users only)
+- **Recommended**: Keep at 4 steps for optimal performance
+- **Note**: More steps may not improve quality as models are trained for 4-step generation
 
 #### Seed Control
 - **Random Seed**: Different result each time
@@ -358,11 +359,12 @@ A steaming cup of coffee on a wooden table, morning light, cozy atmosphere
 8. **Upgrade to 9B FP8** if you have 16GB+ VRAM for better quality
 
 ### Generation Settings
-9. **Use 4 inference steps** - models are specifically optimized for this
-10. **Keep guidance scale around 4.0** for best results
-11. **Standard resolutions**: 1024x1024, 1024x768, 768x1024
+9. **Use default 4 inference steps** - models are specifically optimized for this
+10. **Keep guidance scale around 3.5-4.5** for best results
+11. **Use size presets** for quick resolution selection
+12. **Standard resolutions**: 1024x1024, 1024x768, 768x1024, 1280x720, 1536x640
 
-💡 **Pro Tip**: Distillation (4 steps) and quantization (FP8/NVFP4) are independent! You can use a large 9B model with low VRAM by choosing NVFP4, and still get fast generation with 4 steps.
+💡 **Pro Tip**: Quantization (FP8/NVFP4) lets you use larger models on lower-VRAM GPUs! Choose **9B NVFP4** for high quality on mid-range GPUs, or **4B FP8** for best balance on consumer hardware.
 
 ---
 
