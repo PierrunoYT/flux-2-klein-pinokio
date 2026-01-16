@@ -367,174 +367,174 @@ css = """
 # Create Gradio interface
 with gr.Blocks(title="FLUX.2 [klein] Image Generator", css=css) as demo:
     with gr.Column(elem_id="col-container"):
-    gr.Markdown(f"""
-    # 🎨 FLUX.2 [klein] Image Generator
-    
-    Generate high-quality images from text descriptions using Black Forest Labs' FLUX.2 [klein] models.
-    
-    **Features:**
-    - ⚡ Sub-second image generation with outstanding quality
-    - 🎯 Step-distilled to 4 inference steps for optimal speed
-    - 🗜️ Multiple quantization options (Base/FP8/NVFP4) for different VRAM requirements
-    - 💻 Choose between 4B (consumer GPUs) or 9B (high-end GPUs) models
-    - 💾 **Auto-save**: All images saved to `{OUTPUT_DIR}/` in PNG format with metadata
-    
-    *Note: First generation will take longer as the model loads into memory.*
-    """)
-    
-    # Hugging Face Token Section
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("""
-            ### 🔑 Authentication Required
-            These models are gated. You need a Hugging Face token with access to the FLUX.2 [klein] models.
-            
-            **Steps:**
-            1. Get your token from [Hugging Face Settings](https://huggingface.co/settings/tokens)
-            2. Accept the license at [FLUX.2-klein-4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) and/or [FLUX.2-klein-9B](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B)
-            3. Enter your token below
-            """)
-            
-            with gr.Row():
-                token_input = gr.Textbox(
-                    label="Hugging Face Token",
-                    placeholder="hf_...",
-                    type="password",
-                    scale=4
-                )
-                token_btn = gr.Button("Set Token", variant="primary", scale=1)
-            
-            token_status = gr.Textbox(
-                label="Status",
-                interactive=False,
-                value="⚠ Please set your Hugging Face token to continue"
-            )
-    
-    gr.Markdown("---")
-    
-    with gr.Row():
-        with gr.Column(scale=1):
-            # Input controls
-            prompt_input = gr.Textbox(
-                label="Prompt",
-                placeholder="A cat holding a sign that says hello world",
-                lines=3,
-                value="A cat holding a sign that says hello world"
-            )
-            
-            with gr.Accordion("Input Image(s) (optional)", open=False):
-                input_images = gr.Gallery(
-                    label="Input Image(s) for editing/combining",
-                    type="pil",
-                    columns=3,
-                    rows=1,
-                    show_label=False
-                )
-            
-            mode_choice = gr.Radio(
-                label="Mode",
-                choices=["Distilled (4 steps)", "Base (50 steps)"],
-                value="Distilled (4 steps)",
-                info="Distilled = fast (4 steps), Base = traditional (50 steps)"
-            )
-            
-            model_selector = gr.Radio(
-                choices=[
-                    "FLUX.2 klein 4B (~13GB VRAM)",
-                    "FLUX.2 klein 4B FP8 (~7GB VRAM - Quantized)",
-                    "FLUX.2 klein 4B NVFP4 (~4GB VRAM - Quantized)",
-                    "FLUX.2 klein 9B (~29GB VRAM)",
-                    "FLUX.2 klein 9B FP8 (~15GB VRAM - Quantized)",
-                    "FLUX.2 klein 9B NVFP4 (~8GB VRAM - Quantized)"
-                ],
-                value="FLUX.2 klein 4B FP8 (~7GB VRAM - Quantized)",
-                label="Model Selection",
-                info="4B = consumer GPUs, 9B = high-end GPUs | Base = full precision, FP8 = best balance, NVFP4 = lowest VRAM"
-            )
-            
-            with gr.Accordion("Advanced Settings", open=False):
-                size_preset = gr.Dropdown(
-                    label="Size Preset",
-                    choices=[
-                        "Square (1:1) - 1024x1024",
-                        "Landscape (4:3) - 1024x768",
-                        "Landscape (16:9) - 1024x576",
-                        "Landscape (21:9) - 1344x576",
-                        "Portrait (3:4) - 768x1024",
-                        "Portrait (9:16) - 576x1024",
-                        "Portrait (9:21) - 576x1344",
-                        "Widescreen (16:9) - 1280x720",
-                        "Widescreen (21:9) - 1536x640",
-                    ],
-                    value="Square (1:1) - 1024x1024",
-                    info="Select a preset or manually adjust sliders below"
-                )
+        gr.Markdown(f"""
+        # 🎨 FLUX.2 [klein] Image Generator
+        
+        Generate high-quality images from text descriptions using Black Forest Labs' FLUX.2 [klein] models.
+        
+        **Features:**
+        - ⚡ Sub-second image generation with outstanding quality
+        - 🎯 Step-distilled to 4 inference steps for optimal speed
+        - 🗜️ Multiple quantization options (Base/FP8/NVFP4) for different VRAM requirements
+        - 💻 Choose between 4B (consumer GPUs) or 9B (high-end GPUs) models
+        - 💾 **Auto-save**: All images saved to `{OUTPUT_DIR}/` in PNG format with metadata
+        
+        *Note: First generation will take longer as the model loads into memory.*
+        """)
+        
+        # Hugging Face Token Section
+        with gr.Row():
+            with gr.Column():
+                gr.Markdown("""
+                ### 🔑 Authentication Required
+                These models are gated. You need a Hugging Face token with access to the FLUX.2 [klein] models.
+                
+                **Steps:**
+                1. Get your token from [Hugging Face Settings](https://huggingface.co/settings/tokens)
+                2. Accept the license at [FLUX.2-klein-4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) and/or [FLUX.2-klein-9B](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B)
+                3. Enter your token below
+                """)
                 
                 with gr.Row():
-                    width_slider = gr.Slider(
-                        minimum=256,
-                        maximum=2048,
-                        step=8,
-                        value=1024,
-                        label="Width"
+                    token_input = gr.Textbox(
+                        label="Hugging Face Token",
+                        placeholder="hf_...",
+                        type="password",
+                        scale=4
                     )
-                    height_slider = gr.Slider(
-                        minimum=256,
-                        maximum=2048,
-                        step=8,
-                        value=1024,
-                        label="Height"
+                    token_btn = gr.Button("Set Token", variant="primary", scale=1)
+                
+                token_status = gr.Textbox(
+                    label="Status",
+                    interactive=False,
+                    value="⚠ Please set your Hugging Face token to continue"
+                )
+        
+        gr.Markdown("---")
+        
+        with gr.Row():
+            with gr.Column(scale=1):
+                # Input controls
+                prompt_input = gr.Textbox(
+                    label="Prompt",
+                    placeholder="A cat holding a sign that says hello world",
+                    lines=3,
+                    value="A cat holding a sign that says hello world"
+                )
+                
+                with gr.Accordion("Input Image(s) (optional)", open=False):
+                    input_images = gr.Gallery(
+                        label="Input Image(s) for editing/combining",
+                        type="pil",
+                        columns=3,
+                        rows=1,
+                        show_label=False
                     )
                 
-                guidance_scale_slider = gr.Slider(
-                    minimum=1.0,
-                    maximum=10.0,
-                    step=0.1,
-                    value=3.5,
-                    label="Guidance Scale",
-                    info="Higher values follow the prompt more closely"
+                mode_choice = gr.Radio(
+                    label="Mode",
+                    choices=["Distilled (4 steps)", "Base (50 steps)"],
+                    value="Distilled (4 steps)",
+                    info="Distilled = fast (4 steps), Base = traditional (50 steps)"
                 )
                 
-                steps_slider = gr.Slider(
-                    minimum=1,
-                    maximum=100,
-                    step=1,
-                    value=4,
-                    label="Inference Steps",
-                    info="Auto-updates based on mode. Distilled optimized for 4 steps."
+                model_selector = gr.Radio(
+                    choices=[
+                        "FLUX.2 klein 4B (~13GB VRAM)",
+                        "FLUX.2 klein 4B FP8 (~7GB VRAM - Quantized)",
+                        "FLUX.2 klein 4B NVFP4 (~4GB VRAM - Quantized)",
+                        "FLUX.2 klein 9B (~29GB VRAM)",
+                        "FLUX.2 klein 9B FP8 (~15GB VRAM - Quantized)",
+                        "FLUX.2 klein 9B NVFP4 (~8GB VRAM - Quantized)"
+                    ],
+                    value="FLUX.2 klein 4B FP8 (~7GB VRAM - Quantized)",
+                    label="Model Selection",
+                    info="4B = consumer GPUs, 9B = high-end GPUs | Base = full precision, FP8 = best balance, NVFP4 = lowest VRAM"
                 )
                 
-                use_random_seed = gr.Checkbox(
-                    label="Use Random Seed",
-                    value=True
-                )
+                with gr.Accordion("Advanced Settings", open=False):
+                    size_preset = gr.Dropdown(
+                        label="Size Preset",
+                        choices=[
+                            "Square (1:1) - 1024x1024",
+                            "Landscape (4:3) - 1024x768",
+                            "Landscape (16:9) - 1024x576",
+                            "Landscape (21:9) - 1344x576",
+                            "Portrait (3:4) - 768x1024",
+                            "Portrait (9:16) - 576x1024",
+                            "Portrait (9:21) - 576x1344",
+                            "Widescreen (16:9) - 1280x720",
+                            "Widescreen (21:9) - 1536x640",
+                        ],
+                        value="Square (1:1) - 1024x1024",
+                        info="Select a preset or manually adjust sliders below"
+                    )
+                    
+                    with gr.Row():
+                        width_slider = gr.Slider(
+                            minimum=256,
+                            maximum=2048,
+                            step=8,
+                            value=1024,
+                            label="Width"
+                        )
+                        height_slider = gr.Slider(
+                            minimum=256,
+                            maximum=2048,
+                            step=8,
+                            value=1024,
+                            label="Height"
+                        )
+                    
+                    guidance_scale_slider = gr.Slider(
+                        minimum=1.0,
+                        maximum=10.0,
+                        step=0.1,
+                        value=3.5,
+                        label="Guidance Scale",
+                        info="Higher values follow the prompt more closely"
+                    )
+                    
+                    steps_slider = gr.Slider(
+                        minimum=1,
+                        maximum=100,
+                        step=1,
+                        value=4,
+                        label="Inference Steps",
+                        info="Auto-updates based on mode. Distilled optimized for 4 steps."
+                    )
+                    
+                    use_random_seed = gr.Checkbox(
+                        label="Use Random Seed",
+                        value=True
+                    )
+                    
+                    seed_input = gr.Number(
+                        label="Seed (ignored if random seed is enabled)",
+                        value=0,
+                        precision=0
+                    )
                 
-                seed_input = gr.Number(
-                    label="Seed (ignored if random seed is enabled)",
+                generate_btn = gr.Button("🚀 Generate Image", variant="primary", size="lg")
+                
+            with gr.Column(scale=1):
+                # Output
+                output_image = gr.Image(
+                    label="Generated Image",
+                    type="pil",
+                    height=600
+                )
+                status_text = gr.Textbox(
+                    label="Status",
+                    interactive=False
+                )
+                seed_output = gr.Number(
+                    label="Seed Used",
                     value=0,
-                    precision=0
+                    interactive=False,
+                    visible=False
                 )
-            
-            generate_btn = gr.Button("🚀 Generate Image", variant="primary", size="lg")
-            
-        with gr.Column(scale=1):
-            # Output
-            output_image = gr.Image(
-                label="Generated Image",
-                type="pil",
-                height=600
-            )
-            status_text = gr.Textbox(
-                label="Status",
-                interactive=False
-            )
-            seed_output = gr.Number(
-                label="Seed Used",
-                value=0,
-                interactive=False,
-                visible=False
-            )
-    
+        
         # Example prompts
         gr.Examples(
             examples=[
